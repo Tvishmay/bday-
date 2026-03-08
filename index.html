@@ -23,12 +23,11 @@ body {
     height: 100vh; width: 100vw;
 }
 
-/* THE FIX: STACKING IMAGES MANUALLY */
+/* BACKGROUND FIXED FOR GITHUB */
 .background {
     position: fixed;
     width: 100%;
     height: 400%; 
-    /* Make sure these names and extensions (.jpg vs .png) match your files exactly! */
     background-image: url("img1.jpg"), url("img2.jpg"), url("img3.jpg"), url("img4.jpg");
     background-position: 0% 0%, 0% 25%, 0% 50%, 0% 75%;
     background-size: 100% 25%;
@@ -44,15 +43,17 @@ body {
     100% { transform: translateY(-75%); }
 }
 
-/* ... (Keep all other styles: heart, wall, input, button, message from previous code) ... */
 .heart { position: fixed; color: var(--primary-love); font-size: 18px; z-index: 100; pointer-events: none; animation: float 4s linear forwards; }
 @keyframes float { 0% { transform: translateY(105vh) scale(1); opacity: 1; } 100% { transform: translateY(-10vh) scale(1.5); opacity: 0; } }
+
 .wall { position: absolute; inset: 0; background: #0f0102; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; transition: all 1.5s ease; z-index: 20; }
 h2 { font-family: 'Dancing Script', cursive; font-size: 2.5rem; color: var(--soft-pink); margin-bottom: 30px; }
 input { width: 80%; max-width: 250px; padding: 15px; font-size: 16px; margin-bottom: 20px; border: 1px solid rgba(255, 77, 109, 0.3); border-radius: 30px; background: rgba(255, 255, 255, 0.05); color: white; text-align: center; outline: none; }
 button { width: 80%; max-width: 200px; padding: 15px; font-size: 18px; background: var(--primary-love); color: white; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; }
+
 .hint { margin-top: 20px; font-size: 13px; opacity: 0.5; font-style: italic; }
 .error { color: var(--primary-love); font-size: 14px; margin-top: 10px; height: 20px; }
+
 .message { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-height: 80vh; max-width: 450px; padding: 30px 25px; background: rgba(0, 0, 0, 0.85); border: 1px solid rgba(255, 179, 193, 0.3); border-radius: 25px; display: none; z-index: 30; overflow-y: auto; box-shadow: 0 0 40px rgba(0,0,0,1); }
 .message p { font-family: 'Dancing Script', cursive; font-size: 20px; line-height: 1.5; text-align: left; color: #fff; }
 .date-footer { font-family: 'Poppins', sans-serif; font-size: 12px; color: var(--soft-pink); margin-top: 25px; letter-spacing: 4px; text-align: center; }
@@ -62,23 +63,8 @@ button { width: 80%; max-width: 200px; padding: 15px; font-size: 18px; backgroun
 <body>
 
 <audio id="loveSong" loop preload="auto">
-  <source src="yoursong.mp3" type="audio/mpeg">
+    <source src="yoursong.mp3" type="audio/mpeg">
 </audio>
-
-<script>
-  var audio = document.getElementById('loveSong');
-  
-  // This will log a message in your Console (F12) if the file is found
-  audio.oncanplaythrough = function() {
-    console.log("SUCCESS: The song 'yoursong.mp3' has been loaded and is ready!");
-  };
-
-  // This will log a message if there is an error
-  audio.onerror = function() {
-    console.error("ERROR: The browser cannot find 'yoursong.mp3'. Check the filename!");
-  };
-</script>
-    
 
 <div class="background" id="bgScroll"></div>
 
@@ -104,6 +90,12 @@ button { width: 80%; max-width: 200px; padding: 15px; font-size: 18px; backgroun
 </div>
 
 <script>
+const audio = document.getElementById('loveSong');
+
+// Console check for GitHub
+audio.oncanplaythrough = () => console.log("Song Loaded!");
+audio.onerror = () => console.error("Song file not found at yoursong.mp3");
+
 function createHeart() {
     const heart = document.createElement('div');
     heart.classList.add('heart');
@@ -115,21 +107,30 @@ function createHeart() {
 }
 
 document.getElementById('unlockBtn').addEventListener('click', function() {
-    var password = "030326";
-    var input = document.getElementById("pass").value;
-    var music = document.getElementById("loveSong");
+    const password = "030326";
+    const input = document.getElementById("pass").value;
 
     if(input === password) {
-        // Force play music
-        music.play().catch(e => console.log("Audio play blocked"));
-
-        // Reveal background
-        document.getElementById("bgScroll").style.display = "block";
+        // --- FORCE AUDIO START ---
+        audio.muted = false;
+        audio.volume = 1.0;
         
-        // Start hearts
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                console.log("Audio playing!");
+            }).catch(e => {
+                // Second attempt if blocked
+                console.log("Audio retry...");
+                audio.play();
+            });
+        }
+
+        // Reveal background & hearts
+        document.getElementById("bgScroll").style.display = "block";
         setInterval(createHeart, 300);
 
-        // Transition wall
+        // Fade wall
         document.getElementById("wall").style.opacity = "0";
 
         setTimeout(function(){
@@ -144,5 +145,3 @@ document.getElementById('unlockBtn').addEventListener('click', function() {
 
 </body>
 </html>
-
-
